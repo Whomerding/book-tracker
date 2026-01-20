@@ -1,0 +1,27 @@
+{
+  "name": "book-finder",
+  "version": "1.0.0",
+  "description": "book finder with ability to add notes and summary",
+  "homepage": "https://github.com/Whomerding/book-tracker#readme",
+  "bugs": {
+    "url": "https://github.com/Whomerding/book-tracker/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Whomerding/book-tracker.git"
+  },
+  "license": "ISC",
+  "author": "Wendy Homerding",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "ejs": "^4.0.1",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.11",
+    "pg": "^8.17.1"
+  }
+}
