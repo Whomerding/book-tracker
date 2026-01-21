@@ -88,48 +88,94 @@ const books_search_data=[
         "rating": "4.30"
     }
 ]
-console.log("Book search data loaded:", books_search_data[0].image);
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-app.get("/", (req, res) => {
-    res.render("index.ejs");});
+app.get("/", async (req, res) => {
+    const results = await db.query("SELECT * FROM books");
+
+    res.render("index.ejs", { books: results.rows });});
 
 app.get("/search", (req, res) => { 
     const query = req.query.book;
     const results = books_search_data
-    console.log('search results:', results);
     res.render("search.ejs", { results: results, query: query });
 });
 
 
 app.post("/add", async (req, res) => {
-  console.log("request body:", req.body);
-  const input = req.body["country"];
+    const { title, author, image, rating, api_book_id } = req.body;
 
-  try {
-    const result = await db.query(
-      "SELECT country_code FROM countries WHERE LOWER(country_name) LIKE '%' || $1 || '%';",
-      [input.toLowerCase()]
-    );
-    const data = result.rows[0];
     try {
-      await db.query(
-        "INSERT INTO visited_countries (country_code, user_id) VALUES ($1, $2)",
-        [data.country_code, currentUserId]  
-      );
-      res.redirect("/");
+        await db.query(
+            "INSERT INTO books (title, author, cover, official_rating, api_book_id) VALUES ($1, $2, $3, $4, $5)",
+            [title, author, image, rating, api_book_id]
+        );
+        res.redirect("/"); 
     } catch (err) {
-      console.log(err);
+        console.error("Error adding book:", err);
+        res.status(500).send("Internal Server Error");
     }
-  } catch (err) {
-    console.log(err);
-  }
 });
 
+app.get("/book/:id", async (req, res) => {
+    const bookId = req.params.id;
+    try {
+        const result = await db.query("SELECT * FROM books WHERE books.id = $1", [bookId]);
+        if (result.rows.length === 0) {
+            return res.status(404).send("Book not found");
+        }
+        const book = result.rows[0];
+        res.render("book.ejs", { book: book });
 
+    } catch (err) {
+        console.error("Error retrieving book:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});     
+
+app.post("/update/:id", async (req, res) => {
+    console.log(req.body);
+    const bookId = req.params.id;
+    const {personal_rating, summary, note} = req.body;
+  const fields = [];
+
+    const values = [];
+    
+    let idx = 1;
+
+    if (personal_rating !== undefined) {
+      fields.push(`personal_rating = $${idx++}`);
+      values.push(personal_rating);
+       console.log("fields:", fields);
+         console.log("values:", values);
+    }
+
+    if (summary !== undefined) {
+      fields.push(`summary = $${idx++}`);
+      values.push(summary);
+    }
+
+    if (fields.length > 0) {
+      values.push(bookId);
+      await db.query(
+        `UPDATE books SET ${fields.join(", ")} WHERE id = $${idx}`,
+        values
+      );
+    }
+
+    if (note && note.trim() !== "") {
+      await db.query(
+        "INSERT INTO notes (book_id, note, created_at) VALUES ($1, $2, NOW())",
+        [bookId, note.trim()]
+      );
+    }
+    res.redirect(`/book/${bookId}`);
+  } 
+);
 
 
 app.listen(port, () => {

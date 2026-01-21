@@ -8,6 +8,21 @@
 
             <input type="submit" value="Submit Search">
         </form>
+        <h2>Your Book Library</h2>
+        <ul>
+            <% books.forEach(function(book) { %>
+                <li>
+                    <strong>
+                        <%= book.title %>
+                    </strong> by <%= book.author %><br>
+                        ⭐️<%= book.official_rating %> <br>
+                            <img src="<%= book.cover %>" alt="<%= book.title %>"><br>
+                            <form action="/book/<%= book.id %>" method="get">
+                                <button type="submit">Add Notes</button>
+                            </form>
+                </li>
+                <% }); %>
+        </ul>
     </body>
 
     </html>
