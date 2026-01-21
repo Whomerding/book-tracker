@@ -37,18 +37,20 @@
                         </form>
                         <% } %>
                             <h2>Your Notes</h2>
-                            <% if (book.note) { array.forEach(note=> {%>
-                                <p>Notes: <%= book.note %>
+                            <% notes.forEach(note=> { %>
+                                <p>
+                                    <%= note.note %>
                                 </p>
-                                <% });%>
-                                    <% } else { %>
-                                        <form action="/update/<%= book.id %>" method="post">
-                                            <label for="note">Your Notes:</label><br>
-                                            <textarea id="note" name="note" rows="4"
-                                                cols="50"><%= book.note %></textarea><br>
-                                            <button type="submit">Save Note</button>
-                                        </form>
-                                        <% } %>
+                                <% }); %>
+
+                                    <form action="/update/<%= book.id %>" method="post">
+                                        <label for="note">Your Notes:</label><br>
+                                        <textarea id="note" name="note" rows="4" cols="50"></textarea><br>
+                                        <button type="submit">Save Note</button>
+                                    </form>
+
+
+
 </body>
 
 <!-- Life changing wisdom about the perception of ourselves and the world.  Don't believe the lies that others have told you about yourself and the world as a whole.  Questions everything and grow! -->

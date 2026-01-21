@@ -124,12 +124,20 @@ app.post("/add", async (req, res) => {
 app.get("/book/:id", async (req, res) => {
     const bookId = req.params.id;
     try {
-        const result = await db.query("SELECT * FROM books WHERE books.id = $1", [bookId]);
+        const result = await db.query("SELECT b.id AS book_id, b.title, b.cover, b.author, b.summary, n.id AS note_id, n.note, n.created_at AS note_created_at FROM books b LEFT JOIN notes n ON b.id = n.book_id WHERE b.id = $1 ORDER BY n.created_at ASC", [bookId]);
+        console.log("Book query result:", result.rows);
+        const notes = result.rows.map(row => ({
+            id: row.id,
+            note: row.note,
+            created_at: row.created_at
+        }));
+        console.log("Retrieved notes:", notes);
         if (result.rows.length === 0) {
             return res.status(404).send("Book not found");
         }
-        const book = result.rows[0];
-        res.render("book.ejs", { book: book });
+        const book = result.rows [0];
+            console.log("Retrieved book:", book);
+        res.render("book.ejs", { book: book, notes: notes });
 
     } catch (err) {
         console.error("Error retrieving book:", err);
