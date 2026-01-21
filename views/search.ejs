@@ -1,0 +1,25 @@
+<%- include ("partials/header.ejs") %>
+
+    <body>
+        <h1>Search Results</h1>
+        <p>Your search query: <%= query %>
+        </p>
+        <ul>
+            <% results.forEach(function(books) { %>
+                <form action="/add" method="post">
+                    <li>
+                        <input type="hidden" name="title" value="<%= books.title %>">
+                        <input type="hidden" name="author" value="<%= books.author %>">
+                        <input type="hidden" name="rating" value="<%= books.rating %>">
+                        <input type="hidden" name="image" value="<%= books.image %>">
+                        <%= books.title %> by <%= books.author %><br>
+                                ⭐️<%= books.rating %> <br>
+                                    <img src="<%= books.image %>" alt="<%= books.title %>">
+                    </li>
+                    <button type="submit">Add to Library</button>
+                </form>
+                <% }); %>
+        </ul>
+    </body>
+
+    </html>
