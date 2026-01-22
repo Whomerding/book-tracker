@@ -1,56 +1,155 @@
-<body>
+<%- include ("partials/header.ejs") %>
 
-    <H1>
-        <%= book.title %>
-    </H1>
-    <p>Author: <%= book.author %>
-    </p>
-    <p>Rating: <%= book.official_rating %>
-    </p>
-    <img src="<%= book.cover %>" alt="<%= book.title %>">
-    </div>
-    <% if (book.personal_rating) { %>
-        <p>Your Rating: <%= book.personal_rating %>
+    <body>
+
+        <H1>
+            <%= book.title %>
+        </H1>
+        <p>Author: <%= book.author %>
         </p>
-        <% } else { %>
-            <form action="/update/<%= book.id %>" method="post">
-                <label for="personal_rating">Your Rating (1-5):</label>
-                <input type="number" id="personal_rating" name="personal_rating" min="1" max="5" step="0.1"
-                    value="<%= book.personal_rating %>">
-                <button type="submit">Save Rating</button>
-            </form>
-            <% } %>
-                <h2>Your Summary</h2>
-
-
-
-                <% if (book.summary) { %>
-                    <p>
-                        <%= book.summary %>
+        <p>Rating: <%= book.official_rating %>
+        </p>
+        <img src="<%= book.cover %>" alt="<%= book.title %>">
+        </div>
+        <% if (book.personal_rating) { %>
+            <div class="editable">
+                <div class="read-mode">
+                    <p>Your Rating: <%= book.personal_rating %>
                     </p>
-                    <% } else { %>
-                        <form action="/update/<%= book.id %>" method="post">
+                    <button id="edit" class="edit" onclick="toggleEdit(this)">
+                        <svg id="svg" fill="#000000" width="20px" height="20px" version="1.1" viewBox="144 144 512 512"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <g id="IconSvg_bgCarrier" stroke-width="0"></g>
+                            <g id="IconSvg_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="IconSvg_iconCarrier">
+                                <g xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="m538.59 181.46-212.86 212.85c-1.4297 1.4297-2.3984 3.2539-2.7695 5.2422l-15.168 80.91c-0.61328 3.2617 0.42578 6.6172 2.7734 8.9648 2.3477 2.3516 5.7031 3.3867 8.9688 2.7734l80.91-15.164c1.9844-0.375 3.8086-1.3398 5.2383-2.7734l212.86-212.86c14.863-14.812 8.918-44.031-13.5-66.449-22.422-22.418-51.641-28.363-66.453-13.5zm65.695 65.691-210.64 210.64-63.328 11.891 11.891-63.328 210.64-210.64c5.6406-5.6406 23.426-1.0078 37.938 13.504 14.508 14.508 19.141 32.293 13.5 37.934z" />
+                                    <path
+                                        d="m183.36 626.71h374.02c2.6758 0.003906 5.2383-1.0586 7.1289-2.9492 1.8867-1.8906 2.9492-4.4531 2.9492-7.125v-232.89l-20.152 20.148v202.67h-353.87v-353.87h202.66l20.152-20.152h-232.89c-2.6719 0-5.2344 1.0625-7.125 2.9531-1.8906 1.8906-2.9492 4.4531-2.9492 7.125v374.02c0.015625 5.5586 4.5156 10.059 10.074 10.074z" />
+                                </g>
 
-                            <label for="summary">Your Summary:</label><br>
-                            <textarea id="summary" name="summary" rows="4" cols="50"><%= book.summary %></textarea><br>
-                            <button type="submit">Save Summary</button>
-                        </form>
-                        <% } %>
-                            <h2>Your Notes</h2>
-                            <% notes.forEach(note=> { %>
+                            </g>
+                        </svg>
+
+                    </button>
+                </div>
+                <form hidden class="edit-mode" action="/update/<%= book.book_id %>" method="post">
+                    <label for="update">Your Rating (1-5):</label>
+                    <input type="number" name="personal_rating" min="1" max="5" step="0.1"
+                        value="<%= book.personal_rating %>">
+                    <button type="submit">Save Rating</button>
+                </form>
+            </div>
+            <% } else { %>
+                <form action="/update/<%= book.book_id %>" method="post">
+                    <label for="personal_rating">Your Rating (1-5):</label>
+                    <input type="number" id="personal_rating" name="personal_rating" min="1" max="5" step="0.1"
+                        value="<%= book.personal_rating %>">
+                    <button type="submit">Save Rating</button>
+                </form>
+                <% } %>
+
+                    <h2>Your Summary</h2>
+
+
+
+                    <% if (book.summary) { %>
+                        <div class="editable">
+                            <div class="read-mode">
                                 <p>
-                                    <%= note.note %>
+                                    <%= book.summary %>
                                 </p>
-                                <% }); %>
+                                <button id="edit<%=book.book_id%>" class="edit" onclick="toggleEdit(this)">
+                                    <svg id="svg" fill="#000000" width="20px" height="20px" version="1.1"
+                                        viewBox="144 144 512 512" xmlns="http://www.w3.org/2000/svg">
+                                        <g id="IconSvg_bgCarrier" stroke-width="0"></g>
+                                        <g id="IconSvg_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+                                        </g>
+                                        <g id="IconSvg_iconCarrier">
+                                            <g xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="m538.59 181.46-212.86 212.85c-1.4297 1.4297-2.3984 3.2539-2.7695 5.2422l-15.168 80.91c-0.61328 3.2617 0.42578 6.6172 2.7734 8.9648 2.3477 2.3516 5.7031 3.3867 8.9688 2.7734l80.91-15.164c1.9844-0.375 3.8086-1.3398 5.2383-2.7734l212.86-212.86c14.863-14.812 8.918-44.031-13.5-66.449-22.422-22.418-51.641-28.363-66.453-13.5zm65.695 65.691-210.64 210.64-63.328 11.891 11.891-63.328 210.64-210.64c5.6406-5.6406 23.426-1.0078 37.938 13.504 14.508 14.508 19.141 32.293 13.5 37.934z" />
+                                                <path
+                                                    d="m183.36 626.71h374.02c2.6758 0.003906 5.2383-1.0586 7.1289-2.9492 1.8867-1.8906 2.9492-4.4531 2.9492-7.125v-232.89l-20.152 20.148v202.67h-353.87v-353.87h202.66l20.152-20.152h-232.89c-2.6719 0-5.2344 1.0625-7.125 2.9531-1.8906 1.8906-2.9492 4.4531-2.9492 7.125v374.02c0.015625 5.5586 4.5156 10.059 10.074 10.074z" />
+                                            </g>
 
-                                    <form action="/update/<%= book.id %>" method="post">
-                                        <label for="note">Your Notes:</label><br>
-                                        <textarea id="note" name="note" rows="4" cols="50"></textarea><br>
-                                        <button type="submit">Save Note</button>
-                                    </form>
+                                        </g>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <form hidden class="edit-mode" action="/update/<%=book.book_id%>" method="post">
+                                <label for="update">Your Summary:</label> <br>
+                                <textarea name="summary" rows="4" cols="50"><%= book.summary %></textarea><br>
+                                <button type="submit">Save Summary</button>
+                            </form>
+
+                        </div>
+                        <% } else { %>
+                            <form action="/update/<%= book.book_id %>" method="post">
+
+                                <label for="summary">Your Summary:</label> <br>
+                                <textarea id="summary" name="summary" rows="4"
+                                    cols="50"><%= book.summary %></textarea><br>
+                                <button type="submit">Save Summary</button>
+                            </form>
+
+                            <% } %>
+
+                                <h2>Your Notes</h2>
+                                <% notes.forEach(note=> { %>
+                                    <div class="editable">
+                                        <div class="read-mode">
+                                            <p>
+                                                <%= note.note %>
+                                            </p>
+                                            <%console.log('note:', note.id); %>
+                                                <button id="edit<%=note.id%>" class="edit" onclick="toggleEdit(this)">
+                                                    <svg id="svg" fill="#000000" width="20px" height="20px"
+                                                        version="1.1" viewBox="144 144 512 512"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <g id="IconSvg_bgCarrier" stroke-width="0"></g>
+                                                        <g id="IconSvg_tracerCarrier" stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                        </g>
+                                                        <g id="IconSvg_iconCarrier">
+                                                            <g xmlns="http://www.w3.org/2000/svg">
+                                                                <path
+                                                                    d="m538.59 181.46-212.86 212.85c-1.4297 1.4297-2.3984 3.2539-2.7695 5.2422l-15.168 80.91c-0.61328 3.2617 0.42578 6.6172 2.7734 8.9648 2.3477 2.3516 5.7031 3.3867 8.9688 2.7734l80.91-15.164c1.9844-0.375 3.8086-1.3398 5.2383-2.7734l212.86-212.86c14.863-14.812 8.918-44.031-13.5-66.449-22.422-22.418-51.641-28.363-66.453-13.5zm65.695 65.691-210.64 210.64-63.328 11.891 11.891-63.328 210.64-210.64c5.6406-5.6406 23.426-1.0078 37.938 13.504 14.508 14.508 19.141 32.293 13.5 37.934z" />
+                                                                <path
+                                                                    d="m183.36 626.71h374.02c2.6758 0.003906 5.2383-1.0586 7.1289-2.9492 1.8867-1.8906 2.9492-4.4531 2.9492-7.125v-232.89l-20.152 20.148v202.67h-353.87v-353.87h202.66l20.152-20.152h-232.89c-2.6719 0-5.2344 1.0625-7.125 2.9531-1.8906 1.8906-2.9492 4.4531-2.9492 7.125v374.02c0.015625 5.5586 4.5156 10.059 10.074 10.074z" />
+                                                            </g>
+
+                                                        </g>
+                                                    </svg>
+                                                </button>
+                                        </div>
+                                        <form class="edit-mode" hidden action="/edit/note/<%= note.id %>" method="post">
+                                            <br>
+                                            <textarea id="note" name="note" rows="4" cols="50"></textarea><br>
+                                            <button type="submit">Save Note</button>
+                                        </form>
+
+                                        <% }); %>
+                                            <form action="/update/<%= book.book_id %>" method="post">
+                                                <br>
+                                                <textarea id="note" name="note" rows="4" cols="50"></textarea><br>
+                                                <button type="submit">Save Note</button>
+                                            </form>
+                                    </div>
+                                    <script>
+                                        function toggleEdit(el) {
+                                            const container = el.closest(".editable");
+                                            const readMode = container.querySelector(".read-mode");
+                                            const editMode = container.querySelector(".edit-mode");
+
+                                            readMode.hidden = !readMode.hidden;
+                                            editMode.hidden = !editMode.hidden;
+                                        } 
+                                    </script>
 
 
+    </body>
 
-</body>
-
-<!-- Life changing wisdom about the perception of ourselves and the world.  Don't believe the lies that others have told you about yourself and the world as a whole.  Questions everything and grow! -->
+    </body>

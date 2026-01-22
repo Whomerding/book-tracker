@@ -1,3 +1,9 @@
 h1 {
     color: pink;
 }
+
+.edit {
+    border-style: hidden;
+    background-color: powderblue;
+
+}

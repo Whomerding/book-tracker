@@ -124,12 +124,11 @@ app.post("/add", async (req, res) => {
 app.get("/book/:id", async (req, res) => {
     const bookId = req.params.id;
     try {
-        const result = await db.query("SELECT b.id AS book_id, b.title, b.cover, b.author, b.summary, n.id AS note_id, n.note, n.created_at AS note_created_at FROM books b LEFT JOIN notes n ON b.id = n.book_id WHERE b.id = $1 ORDER BY n.created_at ASC", [bookId]);
-        console.log("Book query result:", result.rows);
+        const result = await db.query("SELECT b.id AS book_id, b.title, b.personal_rating, b.cover, b.official_rating, b.author, b.summary, n.id AS note_id, n.note, n.created_at AS note_created_at FROM books b LEFT JOIN notes n ON b.id = n.book_id WHERE b.id = $1 ORDER BY n.created_at ASC", [bookId]);
         const notes = result.rows.map(row => ({
-            id: row.id,
+            id: row.note_id,
             note: row.note,
-            created_at: row.created_at
+            created_at: row.note_created_at
         }));
         console.log("Retrieved notes:", notes);
         if (result.rows.length === 0) {
@@ -146,7 +145,6 @@ app.get("/book/:id", async (req, res) => {
 });     
 
 app.post("/update/:id", async (req, res) => {
-    console.log(req.body);
     const bookId = req.params.id;
     const {personal_rating, summary, note} = req.body;
   const fields = [];
@@ -185,7 +183,45 @@ app.post("/update/:id", async (req, res) => {
   } 
 );
 
+app.post("/delete/:id", async (req, res) => {
+    const bookId = req.params.id;
+    try {
+        await db.query("DELETE FROM books WHERE id = $1", [bookId]);
+        res.redirect("/");
+    } catch (err) {
+        console.error("Error deleting book:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+app.post("/edit/note/:id", async (req, res) => {
+    const noteId = req.params.id;
+    const { note } = req.body;
+   try {
+    await db.query("UPDATE notes SET note = $1 WHERE id = $2", [note, noteId]);
+        const result = await db.query("SELECT book_id FROM notes WHERE id = $1", [noteId]);
+        const bookId = result.rows[0].book_id;
+        res.redirect(`/book/${bookId}`);
+    } catch (err) {
+        console.error("Error editing note:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+app.post("/delete/note/:id", async (req, res) => {
+    const noteId = req.params.id;
+    try {
+        const result = await db.query("SELECT book_id FROM notes WHERE id = $1", [noteId]);
+        if (result.rows.length === 0) {
+            return res.status(404).send("Note not found");
+        }
+        const bookId = result.rows[0].book_id;
 
-app.listen(port, () => {
+        await db.query("DELETE FROM notes WHERE id = $1", [noteId]);
+        res.redirect(`/book/${bookId}`);
+    } catch (err) {
+        console.error("Error deleting note:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+   app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
