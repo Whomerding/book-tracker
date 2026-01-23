@@ -2,6 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
 import dotenv from "dotenv";
+import axios from "axios";
 
 dotenv.config();
 
@@ -100,10 +101,18 @@ app.get("/", async (req, res) => {
 
     res.render("index.ejs", { books: results.rows });});
 
-app.get("/search", (req, res) => { 
+app.get("/search", async (req, res) => { 
     const query = req.query.book;
-    const results = books_search_data
-    res.render("search.ejs", { results: results, query: query });
+
+    const results = await axios.get(`https://book-info-hub.p.rapidapi.com/search.php`, {
+        params: { query },
+        headers: {
+            "X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
+            "X-RapidAPI-Host": "book-info-hub.p.rapidapi.com"
+        },
+    });
+
+    res.render("search.ejs", { results: results.data, query: query });
 });
 
 
@@ -205,17 +214,15 @@ app.post("/edit/note/:id", async (req, res) => {
 });
 app.post("/delete/note/:id", async (req, res) => {
     const noteId = req.params.id;
-    try {
-        const result = await db.query("SELECT book_id FROM notes WHERE id = $1", [noteId]);
-        if (result.rows.length === 0) {
-            return res.status(404).send("Note not found");
-        }
-        const bookId = result.rows[0].book_id;
-
+    const bookId = req.params.bookId;
+    console.log (req.params);
+    console.log("Received request to delete note with ID:", noteId);
+    console.log("Deleting note with ID:", noteId);
+try {
         await db.query("DELETE FROM notes WHERE id = $1", [noteId]);
-        res.redirect(`/book/${bookId}`);
+        res.redirect("/book/" + req.body.bookId);
     } catch (err) {
-        console.error("Error deleting note:", err);
+        console.error("Error deleting book:", err);
         res.status(500).send("Internal Server Error");
     }
 });
