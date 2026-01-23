@@ -90,6 +90,7 @@ const books_search_data=[
 ]
 
 
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -130,12 +131,10 @@ app.get("/book/:id", async (req, res) => {
             note: row.note,
             created_at: row.note_created_at
         }));
-        console.log("Retrieved notes:", notes);
         if (result.rows.length === 0) {
             return res.status(404).send("Book not found");
         }
         const book = result.rows [0];
-            console.log("Retrieved book:", book);
         res.render("book.ejs", { book: book, notes: notes });
 
     } catch (err) {
@@ -156,8 +155,6 @@ app.post("/update/:id", async (req, res) => {
     if (personal_rating !== undefined) {
       fields.push(`personal_rating = $${idx++}`);
       values.push(personal_rating);
-       console.log("fields:", fields);
-         console.log("values:", values);
     }
 
     if (summary !== undefined) {
