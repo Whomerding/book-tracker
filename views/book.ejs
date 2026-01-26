@@ -97,11 +97,11 @@
                         <% } %>
 
                             <h3 class="center-item">Your Notes</h3>
-                            <% if (notes.length===0) { %>
+                            <% if (book.note===null) { %>
                                 <p class="center-item">No notes yet</p>
+
                                 <% }else { %>
                                     <% notes.forEach(note=> { %>
-
                                         <div class="editable">
                                             <div class="read-mode">
                                                 <p>
