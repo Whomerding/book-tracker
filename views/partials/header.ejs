@@ -19,9 +19,13 @@
             </a>
 
         </div>
-        <form action="/search" method="get">
-            <label for="query">Search:</label>
-            <input type="text" id="query" name="book">
-            <input style="color: #DCD7C9;" type="submit" value="Find Books">
-        </form>
+        <div class="search-and-logout">
+            <form style="margin: 2px" action="/search" method="get">
+                <label for="query">Search:</label>
+                <input type="text" id="query" name="book">
+                <input style="color: #DCD7C9;" type="submit" value="Find Books">
+            </form>
+            <a style="size: 8px;" href="/logout" role="button">Log Out</a>
+
+        </div>
     </div>

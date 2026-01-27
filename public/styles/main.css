@@ -11,6 +11,12 @@
     font-family: fantasy;
 }
 
+.search-and-logout {
+    display: flex;
+    flex-direction: column;
+    align-items: self-end;
+}
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
@@ -179,4 +185,16 @@ a:visited {
     flex-direction: column;
     align-items: center;
     text-align: center;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+
+}
+
+.google {
+    padding: 8px;
 }

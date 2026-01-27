@@ -13,6 +13,7 @@ dotenv.config();
 
 const app = express();
 const port = 3000;
+const saltRounds = 10;
 
 
 app.use(session({
@@ -124,11 +125,15 @@ if (req.isAuthenticated()) {
 }});
 
 app.get("/login", (req, res) => {
-  res.render("login.ejs");
+  res.render("login.ejs", {
+    error: null,
+  });
 });
 
 app.get("/register", (req, res) => {
-  res.render("register.ejs");
+  res.render("register.ejs", {
+    error: null,    
+  });
 });
 
 app.get("/search", async (req, res) => { 
@@ -160,17 +165,48 @@ app.get(
   })
 );
 
-app.post(
-  "/login",
-  passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/login",
-  })
-);
+app.get("/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) console.log(err);
+    res.redirect("/");
+  });
+});
+
+app.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) return next(err);
+
+    if (!user) {
+        if (info.message === "User not found") {
+        return res.render("register.ejs", { 
+            error: info.message 
+        });
+        }else
+        return res.render("login.ejs", { 
+            error: info.message 
+        });
+}
+
+    req.login(user, err => {
+      if (err) return next(err);
+      res.redirect("/");
+    });
+  })(req, res, next);
+});
 
 app.post("/register", async (req, res) => {
   const email = req.body.username;
   const password = req.body.password;
+ const errors = [];
+
+  if (!email || !email.trim()) errors.push("Email is required.");
+
+  const pwErrors = validatePassword(password, email);
+  errors.push(...pwErrors);
+ 
+    if (errors.length) {
+    return res.status(400).render("register.ejs", { error: errors[0] });
+  }
 
   try {
     const checkResult = await db.query("SELECT * FROM users WHERE email = $1", [
@@ -178,7 +214,7 @@ app.post("/register", async (req, res) => {
     ]);
 
     if (checkResult.rows.length > 0) {
-      req.redirect("/login");
+      res.redirect("/login");
     } else {
       bcrypt.hash(password, saltRounds, async (err, hash) => {
         if (err) {
@@ -203,11 +239,12 @@ app.post("/register", async (req, res) => {
 
 app.post("/add", async (req, res) => {
     const { title, author, image, rating, api_book_id } = req.body;
-
+const userId = req.user.id;
+console.log("Adding book for user ID:", userId);
     try {
         await db.query(
-            "INSERT INTO books (title, author, cover, official_rating, api_book_id) VALUES ($1, $2, $3, $4, $5)",
-            [title, author, image, rating, api_book_id]
+            "INSERT INTO books (title, author, cover, official_rating, api_book_id, user_id) VALUES ($1, $2, $3, $4, $5, $6)",
+            [title, author, image, rating, api_book_id, userId]
         );
         res.redirect("/"); 
     } catch (err) {
@@ -312,7 +349,6 @@ try {
     }
 });
 
-
 passport.use("local",
   new Strategy(async function verify(username, password, cb) {
     try {
@@ -333,18 +369,20 @@ passport.use("local",
               return cb(null, user);
             } else {
               //Did not pass password check
-              return cb(null, false);
+              return cb(null, false, {message: "Incorrect password" });
             }
           }
         });
       } else {
-        return cb("User not found");
+        return cb(null, false, {message: "User not found"});
       }
     } catch (err) {
       console.log(err);
     }
   })
 );
+
+
 
 passport.use(
   "google", 
@@ -372,6 +410,19 @@ passport.use(
     }
   }
 ));
+
+function validatePassword(password, email) {
+  const pwd = (password || "").trim();
+  const errors = [];
+
+  if (!pwd) errors.push("Password is required.");
+  if (pwd.length < 8) errors.push("Password must be at least 8 characters.");
+  if (pwd.length > 72) errors.push("Password must be 72 characters or less.");
+  if (email && pwd.toLowerCase() === email.toLowerCase())
+    errors.push("Password cannot be the same as your email.");
+
+  return errors;
+}
 
 passport.serializeUser((user, cb) => {
   cb(null, user);
